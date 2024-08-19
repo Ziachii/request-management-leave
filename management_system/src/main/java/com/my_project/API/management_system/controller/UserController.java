@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserController {
 
-     private final UserService userService;
+    private final UserService userService;
 
     @PostMapping()
     public ResponseEntity<?> createUser(@RequestBody UserDTO userDTO) {
@@ -27,19 +27,20 @@ public class UserController {
         return ResponseEntity.ok(responseDTO);
     }
 
-     @GetMapping("{id}")
+    @GetMapping("{id}")
     public ResponseEntity<?> getUser(@PathVariable Long id) {
-         User userById = userService.getUserById(id);
-         return ResponseEntity.ok(UserMapper.INSTANCE.toUserDTO(userById));
-     }
+        User userById = userService.getUserById(id);
+        return ResponseEntity.ok(UserMapper.INSTANCE.toUserDTO(userById));
+    }
 
-    /*
+/*
+
     @GetMapping()
     public ResponseEntity<?> getAllUsers() {
         List<UserDTO> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
     }
-    */
+*/
     @PutMapping("{id}")
     public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
         User user = userService.updateUser(id, userDTO);
@@ -62,13 +63,15 @@ public class UserController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(list);
     }
+/*
 
-//    @GetMapping("/page")
-//    public ResponseEntity<?> userPage(@RequestParam Map<String, String> params){
-//        Page<User> page = userService.userPage(params);
-//
-//        PageDTO pageDTO = new PageDTO(page);
-//        return ResponseEntity.ok(pageDTO);
-//    }
+    @GetMapping("/page")
+    public ResponseEntity<?> userPage(@RequestParam Map<String, String> params){
+        Page<User> page = userService.userPage(params);
+
+        PageDTO pageDTO = new PageDTO(page);
+        return ResponseEntity.ok(pageDTO);
+    }
+*/
 
 }

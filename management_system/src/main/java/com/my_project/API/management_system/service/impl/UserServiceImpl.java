@@ -14,16 +14,13 @@ import com.my_project.API.management_system.util.PageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.support.PageableUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserService{
 
     private final UserRepository userRepository;
 
@@ -139,4 +136,5 @@ public class UserServiceImpl implements UserService {
         Page<User> page = userRepository.findAll(userSpec, pageable);
         return page;
     }
+
 }

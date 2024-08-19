@@ -2,12 +2,19 @@ package com.my_project.API.management_system.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.List;
 
 @Entity
 @Data
 @Table(name = "users")
-public class User {
+public class User  {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Id
     @Column(name = "USER_ID")
@@ -30,5 +37,6 @@ public class User {
     @JoinColumn(name = "role_id")
     @JsonBackReference
     private Role role;
+
 
 }
