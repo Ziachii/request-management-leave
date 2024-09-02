@@ -20,6 +20,6 @@ public interface UserService
      void deleteUser(Long id);
      List<User> filterUser(Map<String, String> params);
      Page<User> userPage(Map<String, String> params);
-
-
+     boolean authenticateUser(User user);
+     //boolean registerUser(User user);
 }

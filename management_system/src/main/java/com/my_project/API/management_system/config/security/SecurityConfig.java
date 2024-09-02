@@ -1,171 +1,139 @@
 package com.my_project.API.management_system.config.security;
-//import com.my_project.API.management_system.config.jwt.JwtAuthenticationFilter;
-import com.my_project.API.management_system.repository.UserRepository;
-import lombok.AllArgsConstructor;
+
+import com.my_project.API.management_system.config.jwt.FilterChainExceptionHandler;
+import com.my_project.API.management_system.config.jwt.JwtLoginFilter;
+import com.my_project.API.management_system.config.jwt.TokenVerifyFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-//@Configuration
-//@EnableWebSecurity
-//public class SecurityConfig {
-//
-//    @Autowired
-//    private PasswordEncoder passwordEncoder;
-//
-//    public SecurityConfig(PasswordEncoder passwordEncoder) {
-//        this.passwordEncoder = passwordEncoder;
-//    }
-//
-//    @Bean
-//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//        http
-//                .csrf(AbstractHttpConfigurer::disable)
-//                .authorizeHttpRequests(authorize -> authorize
-//                        .requestMatchers("/", "/index.html", "/css/**", "/js/**").permitAll()
-//                        .requestMatchers("/api/users").hasRole( "ADMIN")
-//                        .anyRequest().authenticated()
-//                )
-//                .httpBasic(withDefaults()); // or .httpBasic()
-//
-//        return http.build();
-//    }
-//
-//    @Bean
-////    @Override
-//    public UserDetailsService userDetailsService() {
-//        UserDetails user1 = User.builder()
-//                .username("dara")
-//                .password(passwordEncoder.encode("dara123"))
-//                .roles("SALE")
-//                .build();
-//        UserDetails user2 = User.builder()
-//                .username("thida")
-//                .password(passwordEncoder.encode("thida123"))
-//                .roles("ADMIN")
-//                .authorities(convertPermissionsToAuthorities(Set.of(USER_WRITE, USER_READ, USER_EDIT, USER_DELETE)))
-//                .build();
-//        return new InMemoryUserDetailsManager(user1,user2);
-//    }
-//    private Set<SimpleGrantedAuthority> convertPermissionsToAuthorities(Set<PermissionEnum> permissions) {
-//        return permissions.stream()
-//                .map(permission -> new SimpleGrantedAuthority(permission.name()))
-//                .collect(Collectors.toSet());
-//    }
-// }
-//
 @Configuration
-@EnableWebSecurity
-public class SecurityConfig {
+@EnableGlobalMethodSecurity(
+        prePostEnabled = true,
+        securedEnabled = true,
+        jsr250Enabled = true)
+public class SecurityConfig{
 
-    private final PasswordEncoder passwordEncoder;
+    /*@Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .cors(Customizer.withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)// Disable CSRF protection
+                .authorizeHttpRequests((requests) -> requests
+                        .requestMatchers("api/users/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .logout (logout -> logout
+                .logoutUrl("/api/users/logout")
+                .logoutSuccessHandler((request, response, authentication) -> {
+                            response.setStatus(HttpServletResponse.SC_OK);
+                            response.getWriter().flush();
 
-    public SecurityConfig(PasswordEncoder passwordEncoder) {
-        this.passwordEncoder = passwordEncoder;
+                        }));
+//.logout(LogoutConfigurer::permitAll);
+        return http.build();
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/", "/index.html", "/css/**", "/js/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/users/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/users/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/users/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
-                )
-                .httpBasic()
-                .and()
-                .csrf().disable(); // Disable CSRF protection
-
-        return http.build();
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins("*") // Customize as needed
+                        .allowedMethods("GET", "POST", "PUT", "DELETE")
+                        .allowedHeaders("*");
+            }
+        };
     }
 
     @Bean
     public UserDetailsService userDetailsService() {
-        UserDetails user1 = User.builder()
-                .username("dara")
-                .password(passwordEncoder.encode("dara123"))
-                .roles("SALE")
-                .build();
-
-        UserDetails user2 = User.builder()
-                .username("thida")
-                .password(passwordEncoder.encode("thida123"))
-                .roles("ADMIN")
-                .build();
-
-        return new InMemoryUserDetailsManager(user1, user2);
+        return new OurUserInfoUserDetailSevice();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-        return http.getSharedObject(AuthenticationManagerBuilder.class)
-                .userDetailsService(userDetailsService())
-                .passwordEncoder(passwordEncoder)
-                .and()
-                .build();
-    }
-}
-//    @Bean
-//    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-//        return http.getSharedObject(AuthenticationConfiguration.class).getAuthenticationManager();
-//    }
-
-
-/*
-
-@Configuration
-@AllArgsConstructor
-@EnableWebSecurity
-
-public class SecurityConfig {
-
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/auth/**").permitAll() // Allow access to authentication endpoints
-                        .anyRequest().authenticated() // Require authentication for all other requests
-                )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Use stateless sessions
-                );
-        return http.build();
-    }
-
-    @Bean
-    public UserDetailsService userDetailsService(UserRepository userRepository) {
-        return email -> userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService());
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }*/
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    @Qualifier("customUserDetailsService")
+    private UserDetailsService userDetailsService;
+
+    @Autowired
+    private FilterChainExceptionHandler filterChainExceptionHandler;
+
+//    @Autowired
+    private AuthenticationConfiguration authenticationConfiguration;
+
+    @Bean
+    public SecurityFilterChain configure(HttpSecurity http) throws Exception {
+        http.csrf(AbstractHttpConfigurer::disable)
+                .addFilter(new JwtLoginFilter(authenticationManager(authenticationConfiguration)))
+                .addFilterBefore(filterChainExceptionHandler, JwtLoginFilter.class)
+                .addFilterAfter(new TokenVerifyFilter(), JwtLoginFilter.class)
+                .sessionManagement(sessionManagement ->
+                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .authorizeHttpRequests(authorizeRequests ->
+                        authorizeRequests
+                                .requestMatchers("/", "index.html", "css/**", "js/**").permitAll()
+                                .requestMatchers(HttpMethod.PUT, "/api/users/**").hasAuthority(PermissionEnum.USER_EDIT.getDescription())
+                                //.requestMatchers(HttpMethod.PUT, "/brands/**").hasAuthority(PermissionEnum.BRAND_WRITE.getDescription())
+                                .anyRequest().authenticated()
+                );
+
+        return http.build();
+    }
+
+
+    @Bean
+    AuthenticationManager authenticationManager(
+            AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
+
+    public void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.authenticationProvider(getAuthenticationProvider());
+    }
+
+    @Bean
+    public AuthenticationProvider getAuthenticationProvider() {
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userDetailsService);
+        authenticationProvider.setPasswordEncoder(passwordEncoder);
+        return authenticationProvider;
     }
 }
-*/

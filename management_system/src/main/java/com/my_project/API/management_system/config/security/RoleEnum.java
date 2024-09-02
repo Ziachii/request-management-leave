@@ -11,24 +11,20 @@ import java.util.stream.Collectors;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public enum RoleEnum {
-    ADMIN(Set.of(USER_WRITE, USER_READ,USER_EDIT,USER_DELETE)),
+    IT(1, Set.of(PermissionEnum.LEAVE_WRITE, PermissionEnum.LEAVE_READ)),
+    SALE(2, Set.of(PermissionEnum.LEAVE_WRITE, PermissionEnum.LEAVE_READ)),
+    HR_MANAGER(3, Set.of(PermissionEnum.LEAVE_READ, PermissionEnum.LEAVE_EDIT, PermissionEnum.STATUS_APPROVED, PermissionEnum.STATUS_REJECTED)),
+    CFO(4, Set.of(PermissionEnum.LEAVE_READ, PermissionEnum.LEAVE_EDIT, PermissionEnum.STATUS_APPROVED, PermissionEnum.STATUS_REJECTED)),
+    CEO(5, Set.of(PermissionEnum.LEAVE_READ, PermissionEnum.LEAVE_EDIT, PermissionEnum.STATUS_APPROVED, PermissionEnum.STATUS_REJECTED)),
+    ADMIN(6, Set.of(PermissionEnum.USER_WRITE, PermissionEnum.USER_READ, PermissionEnum.USER_EDIT, PermissionEnum.USER_DELETE));
 
-    CEO(Set.of(LEAVE_READ, LEAVE_EDIT, STATUS_APPROVED, STATUS_REJECTED)),
 
-    CFO(Set.of(LEAVE_READ, LEAVE_EDIT, STATUS_APPROVED, STATUS_REJECTED)),
-
-    HR_MANAGER(Set.of(LEAVE_READ, LEAVE_EDIT, STATUS_APPROVED, STATUS_REJECTED)),
-
-    IT(Set.of(LEAVE_WRITE,LEAVE_READ)),
-
-    SALE(Set.of(LEAVE_WRITE, LEAVE_READ));
-
-    private Set<PermissionEnum> permissions;
+    private final int id;
+    private final Set<PermissionEnum> permissions;
 
     public Set<SimpleGrantedAuthority> getAuthorities() {
-        Set<SimpleGrantedAuthority> grantedAuthorities = this.permissions.stream()
-                .map(permissions -> new SimpleGrantedAuthority(permissions.getDescription()))
+        return permissions.stream()
+                .map(permission -> new SimpleGrantedAuthority(permission.getDescription()))
                 .collect(Collectors.toSet());
-        return grantedAuthorities;
     }
 }

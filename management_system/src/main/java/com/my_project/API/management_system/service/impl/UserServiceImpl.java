@@ -14,6 +14,7 @@ import com.my_project.API.management_system.util.PageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -25,6 +26,7 @@ public class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
 
     private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public User createUser(UserDTO userDTO) {
@@ -39,6 +41,7 @@ public class UserServiceImpl implements UserService{
         }
         User user = UserMapper.INSTANCE.toUser(userDTO);
 
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(role.get());
         return userRepository.save(user);
     }
@@ -75,7 +78,7 @@ public class UserServiceImpl implements UserService{
 
         // Always update the password with the new one from UserDTO, if provided
         if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
-            existingUser.setPassword(userDTO.getPassword()); // Directly set the password
+            existingUser.setPassword(passwordEncoder.encode(userDTO.getPassword()) ); // Directly set the password
         }
 
         // Update role if provided (assuming role is managed by ID)
@@ -136,5 +139,27 @@ public class UserServiceImpl implements UserService{
         Page<User> page = userRepository.findAll(userSpec, pageable);
         return page;
     }
+
+    @Override
+    public boolean authenticateUser(User user) {
+        Optional<User> foundUser = userRepository.findByEmail(user.getEmail());
+        if (foundUser.isPresent() && passwordEncoder.matches(user.getPassword(), foundUser.get().getPassword())) {
+            return true;
+        }
+        return false;
+    }
+
+//    @Override
+//    public boolean registerUser(User user) {
+//        Optional<User> foundUser = userRepository.findByUsernameOrEmail(user.getUsername(), user.getEmail());
+//        if (foundUser.isPresent()) {
+//            return false; // User already exists
+//        }
+//        // Hash the password before saving
+//        user.setPassword(passwordEncoder.encode(user.getPassword()));
+//        userRepository.save(user);
+//        return true;
+//    }
+
 
 }
