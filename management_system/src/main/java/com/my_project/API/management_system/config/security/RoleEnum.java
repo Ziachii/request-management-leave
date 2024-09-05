@@ -4,7 +4,6 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import static com.my_project.API.management_system.config.security.PermissionEnum.*;
 import java.util.Set;
 import java.util.stream.Collectors;
 

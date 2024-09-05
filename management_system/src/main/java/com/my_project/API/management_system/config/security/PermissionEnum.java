@@ -21,8 +21,8 @@ public enum PermissionEnum {
     LEAVE_DELETE("leave:delete"), // ADMIN
 
 
-    STATUS_REJECTED("approve:write"), //who approve by
-    STATUS_APPROVED("approve:write");
+    STATUS_REJECTED("status:rejected"), //who approve by
+    STATUS_APPROVED("status:approved");
 
 
     private String description;

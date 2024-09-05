@@ -34,7 +34,61 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
         jsr250Enabled = true)
 public class SecurityConfig{
 
-    /*@Bean
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    @Qualifier("customUserDetailsService")
+    private UserDetailsService userDetailsService;
+
+    @Autowired
+    private FilterChainExceptionHandler filterChainExceptionHandler;
+
+//    @Autowired
+    private AuthenticationConfiguration authenticationConfiguration;
+
+    @Bean
+    public SecurityFilterChain configure(HttpSecurity http) throws Exception {
+        http.csrf(AbstractHttpConfigurer::disable)
+                .addFilter(new JwtLoginFilter(authenticationManager(authenticationConfiguration)))
+                .addFilterBefore(filterChainExceptionHandler, JwtLoginFilter.class)
+                .addFilterAfter(new TokenVerifyFilter(), JwtLoginFilter.class)
+                .sessionManagement(sessionManagement ->
+                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .authorizeHttpRequests(authorizeRequests ->
+                        authorizeRequests
+                                .requestMatchers("/", "index.html", "css/**", "js/**").permitAll()
+
+                                .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasAuthority("ADMIN")
+                                .anyRequest().authenticated()
+                );
+
+        return http.build();
+    }
+
+
+    @Bean
+    AuthenticationManager authenticationManager(
+            AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
+
+    public void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.authenticationProvider(getAuthenticationProvider());
+    }
+
+    @Bean
+    public AuthenticationProvider getAuthenticationProvider() {
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userDetailsService);
+        authenticationProvider.setPasswordEncoder(passwordEncoder);
+        return authenticationProvider;
+    }
+}
+ /*@Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(Customizer.withDefaults())
@@ -84,56 +138,3 @@ public class SecurityConfig{
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }*/
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    @Qualifier("customUserDetailsService")
-    private UserDetailsService userDetailsService;
-
-    @Autowired
-    private FilterChainExceptionHandler filterChainExceptionHandler;
-
-//    @Autowired
-    private AuthenticationConfiguration authenticationConfiguration;
-
-    @Bean
-    public SecurityFilterChain configure(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
-                .addFilter(new JwtLoginFilter(authenticationManager(authenticationConfiguration)))
-                .addFilterBefore(filterChainExceptionHandler, JwtLoginFilter.class)
-                .addFilterAfter(new TokenVerifyFilter(), JwtLoginFilter.class)
-                .sessionManagement(sessionManagement ->
-                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .authorizeHttpRequests(authorizeRequests ->
-                        authorizeRequests
-                                .requestMatchers("/", "index.html", "css/**", "js/**").permitAll()
-                                .requestMatchers(HttpMethod.PUT, "/api/users/**").hasAuthority(PermissionEnum.USER_EDIT.getDescription())
-                                //.requestMatchers(HttpMethod.PUT, "/brands/**").hasAuthority(PermissionEnum.BRAND_WRITE.getDescription())
-                                .anyRequest().authenticated()
-                );
-
-        return http.build();
-    }
-
-
-    @Bean
-    AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
-
-
-    public void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.authenticationProvider(getAuthenticationProvider());
-    }
-
-    @Bean
-    public AuthenticationProvider getAuthenticationProvider() {
-        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userDetailsService);
-        authenticationProvider.setPasswordEncoder(passwordEncoder);
-        return authenticationProvider;
-    }
-}
